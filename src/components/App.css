@@ -1,0 +1,6 @@
+#table-canvas-wrapper {
+  /* resize: both; */
+  height: 600px;
+  width: 900px;
+  overflow: scroll;
+}

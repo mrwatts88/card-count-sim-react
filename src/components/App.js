@@ -23,10 +23,9 @@ class App extends Component {
       <div className="App">
         <Row className="show-grid">
           <Col id="table-sketch-col" xs={12} md={8}>
-            <P5Wrapper
-              numActivePlayers={this.state.numActivePlayers}
-              sketch={tableSketch}
-            />
+            <div id="table-canvas-wrapper">
+              <P5Wrapper gameState={gameState} sketch={tableSketch} />
+            </div>
           </Col>
           <Col id="settings-col" xs={12} md={4}>
             <Button type="primary" onClick={this.addPlayer}>
@@ -40,3 +39,117 @@ class App extends Component {
 }
 
 export default App
+
+const gameState = {
+  numPlayers: 2,
+  ruleSet: { h17: true },
+  roundIsOver: false,
+  activePlayers: {
+    '1': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+    '2': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+    '3': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+    '4': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+    '5': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+    '6': {
+      hands: [
+        {
+          bustedOrDiscarded: false,
+          bet: 0,
+          hand: [
+            { suit: 3, value: 2 },
+            { suit: 2, value: 11 },
+            { suit: 1, value: 3 },
+            { suit: 3, value: 4 },
+            { suit: 3, value: 4 },
+          ],
+        },
+      ],
+      currentHandIndex: 0,
+    },
+  },
+  dealer: {
+    hands: [
+      {
+        bustedOrDiscarded: false,
+        bet: 0,
+        hand: [{ suit: 1, value: 1 }, { suit: 3, value: 7 }],
+      },
+    ],
+    currentHandIndex: 0,
+  },
+}
