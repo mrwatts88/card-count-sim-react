@@ -1,133 +1,264 @@
-export default function(p) {
-  let ARC_DIAMETER
-  const SPOTS_START_ANGLE = 35
-  const SPOTS_END_ANGLE = 145
-  const NUMBER_OF_SPOTS = 6
-  const SPOT_DIAMETER = 50
-  const CARD_OFFSET = 20
-  const CARD_ADJUSTMENT = (SPOT_DIAMETER * 1.4) / 2
-  let numActivePlayers = 0
-  let twoClubs
-  let players = {}
+const CENTER_OF_SPOT_ARC_OFFSET_Y = -65
+const INSURANCE_LINE_ARC_OFFSET_FROM_SPOTS = 100
+const INSURANCE_LINE_WIDTH = 30
+const INSURANCE_LINE_ANGLE_OFFSET_FROM_SPOTS = 5
+const SPOTS_START_ANGLE = 35
+const SPOTS_END_ANGLE = 145
+const NUMBER_OF_SPOTS = 6
+const SPOT_DIAMETER = 50
+const CARD_WIDTH = SPOT_DIAMETER * 1.4
+const CARD_HEIGHT = 2.1 * SPOT_DIAMETER
+const CARD_WIDTH_WITHIN_IMAGE = 300
+const CARD_HEIGHT_WITHIN_IMAGE = 450
+const SPACE_BETWEEN_DEALER_CARDS = 15
+const FIRST_DEALER_CARD_X_POSITION_RATIO = 0.65
+const DEALER_CARD_POSITION_Y = 25
+const CARD_OFFSET_X = 20
+const CARD_OFFSET_Y = 30
+const CARD_ADJUSTMENT = CARD_WIDTH / 2
+const NUMBER_OF_SUITS = 4
+const NUMBER_OF_RANKS = 13
+const ZERO = 0
+const ONE = 1
+const TABLE_WRAPPER_CLEARANCE_X = 17
+const TABLE_WRAPPER_CLEARANCE_Y = 22
+const TABLE_CANVAS_WRAPPER_DIV = 'table-canvas-wrapper'
+const SERVER_PROTOCOL = 'http'
+const SERVER_HOST_ADDR = 'localhost'
+const SERVER_PORT = '3000'
+const TABLE_LINE_COLOR = 'white'
+const SECONDARY_TABLE_LINE_COLOR = 'yellow'
+const CARD_BORDER_COLOR = 'black'
+const TABLE_LINE_STROKE_WEIGHT = 3
+const CARD_STROKE_WEIGHT = 2
+const TABLE_COLOR = '#0C7327'
+const INSURANCE_LINE_START_ANGLE =
+  SPOTS_START_ANGLE - INSURANCE_LINE_ANGLE_OFFSET_FROM_SPOTS
+const INSURANCE_LINE_END_ANGLE =
+  SPOTS_END_ANGLE + INSURANCE_LINE_ANGLE_OFFSET_FROM_SPOTS
 
-  const tableCanvasWrapper = document.getElementById('table-canvas-wrapper')
-  const canvasWidth = () => tableCanvasWrapper.offsetWidth - 17
-  const canvasHeight = () => tableCanvasWrapper.offsetHeight - 22
+export default p => {
+  let ARC_DIAMETER, ARC_RADIUS, INSURANCE_LINE_DIAMETER
+  let numActivePlayers = ZERO
+  let cardImages = []
+  let players = {}
+  let dealer = {}
+
+  const tableCanvasWrapper = document.getElementById(TABLE_CANVAS_WRAPPER_DIV)
+
+  const canvasWidth = () =>
+    tableCanvasWrapper.offsetWidth - TABLE_WRAPPER_CLEARANCE_X
+
+  const canvasHeight = () =>
+    tableCanvasWrapper.offsetHeight - TABLE_WRAPPER_CLEARANCE_Y
 
   p.preload = () => {
-    twoClubs = p.loadImage('http://localhost:3000/cards/2_of_clubs.png')
+    for (let suitEnum = ZERO; suitEnum < NUMBER_OF_SUITS; ++suitEnum) {
+      cardImages.push([])
+      for (let rank = ONE; rank <= NUMBER_OF_RANKS; ++rank)
+        cardImages[suitEnum][rank] = p.loadImage(
+          `${SERVER_PROTOCOL}://${SERVER_HOST_ADDR}:${SERVER_PORT}/cards/${suitEnum}_${rank}.png`
+        )
+    }
   }
 
   p.setup = () => {
     p.noLoop()
     p.createCanvas(canvasWidth(), canvasHeight())
     ARC_DIAMETER = p.height * 1.4
+    ARC_RADIUS = ARC_DIAMETER / 2
+    INSURANCE_LINE_DIAMETER =
+      ARC_DIAMETER - INSURANCE_LINE_ARC_OFFSET_FROM_SPOTS
   }
 
   p.draw = () => {
-    p.background('green')
-    p.push()
+    p.background(TABLE_COLOR)
     p.noFill()
-    p.stroke('white')
+
+    p.push()
+    p.stroke(TABLE_LINE_COLOR)
     p.angleMode(p.DEGREES)
-    p.translate(p.width / 2, -50)
+    p.translate(p.width / 2, CENTER_OF_SPOT_ARC_OFFSET_Y)
+
+    p.push()
+    p.strokeWeight(TABLE_LINE_STROKE_WEIGHT)
     drawInsuranceLine()
     drawPlayerSpots()
+    p.pop()
+
     drawAllPlayersCards()
     p.pop()
-  }
 
-  p.updateState = () => {
-    p.redraw()
+    drawDealersCards()
   }
 
   p.myCustomRedrawAccordingToNewPropsHandler = props => {
-    numActivePlayers = props.gameState.numPlayers
     players = props.gameState.activePlayers
+    numActivePlayers = Object.keys(players).length
+    dealer = props.gameState.dealer
   }
 
+  p.updateState = () => p.redraw()
+
   const drawInsuranceLine = () => {
+    const arcCenterX = ZERO
+    const arcCenterY = ZERO
+
     p.arc(
-      0,
-      0,
-      ARC_DIAMETER - 100,
-      ARC_DIAMETER - 100,
-      SPOTS_START_ANGLE - 5,
-      SPOTS_END_ANGLE + 5
+      arcCenterX,
+      arcCenterY,
+      INSURANCE_LINE_DIAMETER,
+      INSURANCE_LINE_DIAMETER,
+      INSURANCE_LINE_START_ANGLE,
+      INSURANCE_LINE_END_ANGLE
     )
 
     p.arc(
-      0,
-      0,
-      ARC_DIAMETER - 130,
-      ARC_DIAMETER - 130,
-      SPOTS_START_ANGLE - 5,
-      SPOTS_END_ANGLE + 5
+      arcCenterX,
+      arcCenterX,
+      INSURANCE_LINE_DIAMETER + INSURANCE_LINE_WIDTH,
+      INSURANCE_LINE_DIAMETER + INSURANCE_LINE_WIDTH,
+      INSURANCE_LINE_START_ANGLE,
+      INSURANCE_LINE_END_ANGLE
     )
   }
 
   const drawPlayerSpots = () => {
-    for (let i = 0; i < NUMBER_OF_SPOTS; ++i) {
-      if (i < NUMBER_OF_SPOTS - numActivePlayers) p.stroke('white')
-      else p.stroke('yellow')
+    for (
+      let spotPosition = ZERO;
+      spotPosition < NUMBER_OF_SPOTS;
+      ++spotPosition
+    ) {
+      if (spotPosition < numActivePlayers) p.stroke(SECONDARY_TABLE_LINE_COLOR)
+      else p.stroke(TABLE_LINE_COLOR)
+
+      const playerPosition = spotPosition + ONE
+      const ignoreSecondParameter = ZERO
 
       p.ellipse(
-        getXFromPlayerPosition(i + 1, 0),
-        getYFromPlayerPosition(i + 1, 0),
+        getXPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
+        getYPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
         SPOT_DIAMETER,
         SPOT_DIAMETER
       )
     }
   }
 
-  const drawAllPlayersCards = () => {
-    Object.keys(players).forEach(position =>
-      drawOnePlayersCardsAtPosition(position, players[position])
-    )
-  }
+  const drawDealersCards = () => {
+    if (!dealer || !dealer.hands || !dealer.hands[ZERO]) return
 
-  const drawOnePlayersCardsAtPosition = (position, player) => {
-    for (const hand of player.hands) {
+    const dealersHand = dealer.hands[ZERO].hand
+
+    for (
+      let cardPosition = ZERO;
+      cardPosition < dealersHand.length;
+      ++cardPosition
+    ) {
+      const card = dealersHand[cardPosition]
+      const cardImage = getCardImage(card)
+      const xPosition =
+        p.width * FIRST_DEALER_CARD_X_POSITION_RATIO -
+        cardPosition * (CARD_WIDTH + SPACE_BETWEEN_DEALER_CARDS)
+
+      p.image(
+        cardImage,
+        xPosition,
+        DEALER_CARD_POSITION_Y,
+        CARD_WIDTH,
+        CARD_HEIGHT,
+        ZERO,
+        ZERO,
+        CARD_WIDTH_WITHIN_IMAGE,
+        CARD_HEIGHT_WITHIN_IMAGE
+      )
+
       p.push()
-      p.translate(-CARD_ADJUSTMENT, CARD_ADJUSTMENT)
-      for (let i = 0; i < hand.hand.length; ++i) {
-        const card = hand.hand[i]
-        const cardImage = getCardImage(card)
-        p.image(
-          cardImage,
-          getXFromPlayerPosition(position, i),
-          getYFromPlayerPosition(position, i),
-          SPOT_DIAMETER * 1.4,
-          2.1 * SPOT_DIAMETER
-        )
-      }
+      p.stroke(CARD_BORDER_COLOR)
+      p.strokeWeight(CARD_STROKE_WEIGHT)
+      p.rect(xPosition, DEALER_CARD_POSITION_Y, CARD_WIDTH, CARD_HEIGHT)
       p.pop()
     }
   }
 
-  const getCardImage = card => {
-    return twoClubs
+  const drawAllPlayersCards = () =>
+    Object.keys(players).forEach(position =>
+      drawOnePlayersCardsAtPosition(position, players[position])
+    )
+
+  const drawOnePlayersCardsAtPosition = (playerPosition, player) => {
+    if (!player || !player.hands) return
+
+    for (const hand of player.hands) {
+      p.push()
+      p.translate(-CARD_ADJUSTMENT, CARD_ADJUSTMENT)
+      p.stroke(CARD_BORDER_COLOR)
+      p.strokeWeight(CARD_STROKE_WEIGHT)
+
+      for (
+        let cardPosition = ZERO;
+        cardPosition < hand.hand.length;
+        ++cardPosition
+      ) {
+        const card = hand.hand[cardPosition]
+        const cardImage = getCardImage(card)
+
+        const xPosition = getXPositionFromPlayerPosition(
+          playerPosition,
+          cardPosition
+        )
+
+        const yPosition = getYPositionFromPlayerPosition(
+          playerPosition,
+          cardPosition
+        )
+
+        p.image(
+          cardImage,
+          xPosition,
+          yPosition,
+          CARD_WIDTH,
+          CARD_HEIGHT,
+          ZERO,
+          ZERO,
+          CARD_WIDTH_WITHIN_IMAGE,
+          CARD_HEIGHT_WITHIN_IMAGE
+        )
+
+        p.rect(xPosition, yPosition, CARD_WIDTH, CARD_HEIGHT)
+      }
+
+      p.pop()
+    }
   }
 
-  const getXFromPlayerPosition = (playerPosition, cardPosition) => {
-    return (
-      (ARC_DIAMETER / 2 + cardPosition * CARD_OFFSET) *
-      p.cos(
-        ((SPOTS_END_ANGLE - SPOTS_START_ANGLE) / (NUMBER_OF_SPOTS - 1)) *
-          (playerPosition - 1) +
-          SPOTS_START_ANGLE
-      )
-    )
-  }
+  const getCardImage = card => cardImages[card.suit][card.value]
 
-  const getYFromPlayerPosition = (playerPosition, cardPosition) => {
-    return (
-      (ARC_DIAMETER / 2 + cardPosition * CARD_OFFSET) *
-      p.sin(
-        ((SPOTS_END_ANGLE - SPOTS_START_ANGLE) / (NUMBER_OF_SPOTS - 1)) *
-          (playerPosition - 1) +
-          SPOTS_START_ANGLE
-      )
+  const getXPositionFromPlayerPosition = (playerPosition, cardPosition) =>
+    getPositionFromPlayerPosition(
+      playerPosition,
+      cardPosition,
+      CARD_OFFSET_X,
+      p.cos.bind(p)
     )
-  }
+
+  const getYPositionFromPlayerPosition = (playerPosition, cardPosition) =>
+    getPositionFromPlayerPosition(
+      playerPosition,
+      cardPosition,
+      CARD_OFFSET_Y,
+      p.sin.bind(p)
+    )
+
+  const getPositionFromPlayerPosition = (
+    playerPosition,
+    cardPosition,
+    cardOffset,
+    trigFunction
+  ) =>
+    (ARC_RADIUS + cardPosition * cardOffset) *
+    trigFunction(
+      ((SPOTS_END_ANGLE - SPOTS_START_ANGLE) / (NUMBER_OF_SPOTS - ONE)) *
+        (playerPosition - ONE) +
+        SPOTS_START_ANGLE
+    )
 }
