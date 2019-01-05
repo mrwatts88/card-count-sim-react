@@ -8,8 +8,8 @@ const NUMBER_OF_SPOTS = 6
 const SPOT_DIAMETER = 50
 const CARD_WIDTH = SPOT_DIAMETER * 1.4
 const CARD_HEIGHT = 2.1 * SPOT_DIAMETER
-const CARD_WIDTH_WITHIN_IMAGE = 300
-const CARD_HEIGHT_WITHIN_IMAGE = 450
+const CARD_WIDTH_WITHIN_IMAGE = Infinity
+const CARD_HEIGHT_WITHIN_IMAGE = Infinity
 const SPACE_BETWEEN_DEALER_CARDS = 15
 const FIRST_DEALER_CARD_X_POSITION_RATIO = 0.65
 const DEALER_CARD_POSITION_Y = 25
@@ -32,10 +32,20 @@ const CARD_BORDER_COLOR = 'black'
 const TABLE_LINE_STROKE_WEIGHT = 3
 const CARD_STROKE_WEIGHT = 2
 const TABLE_COLOR = '#0C7327'
+
 const INSURANCE_LINE_START_ANGLE =
   SPOTS_START_ANGLE - INSURANCE_LINE_ANGLE_OFFSET_FROM_SPOTS
 const INSURANCE_LINE_END_ANGLE =
   SPOTS_END_ANGLE + INSURANCE_LINE_ANGLE_OFFSET_FROM_SPOTS
+
+const DENOMINATION_COLOR_MAP = {
+  1: 'white',
+  5: 'red',
+  25: '#57e571',
+  100: 'black',
+  500: '#9b4dcc',
+  1000: 'yellow',
+}
 
 export default p => {
   let ARC_DIAMETER, ARC_RADIUS, INSURANCE_LINE_DIAMETER
@@ -86,7 +96,7 @@ export default p => {
     drawPlayerSpots()
     p.pop()
 
-    drawAllPlayersCards()
+    drawAllPlayersData()
     p.pop()
 
     drawDealersCards()
@@ -180,55 +190,125 @@ export default p => {
     }
   }
 
-  const drawAllPlayersCards = () =>
+  const drawAllPlayersData = () =>
     Object.keys(players).forEach(position =>
-      drawOnePlayersCardsAtPosition(position, players[position])
+      drawPlayerData(position, players[position])
     )
 
-  const drawOnePlayersCardsAtPosition = (playerPosition, player) => {
-    if (!player || !player.hands) return
+  const drawPlayerData = (playerPosition, player) => {
+    if (!player) return
 
     for (const hand of player.hands) {
-      p.push()
-      p.translate(-CARD_ADJUSTMENT, CARD_ADJUSTMENT)
-      p.stroke(CARD_BORDER_COLOR)
-      p.strokeWeight(CARD_STROKE_WEIGHT)
-
-      for (
-        let cardPosition = ZERO;
-        cardPosition < hand.hand.length;
-        ++cardPosition
-      ) {
-        const card = hand.hand[cardPosition]
-        const cardImage = getCardImage(card)
-
-        const xPosition = getXPositionFromPlayerPosition(
-          playerPosition,
-          cardPosition
-        )
-
-        const yPosition = getYPositionFromPlayerPosition(
-          playerPosition,
-          cardPosition
-        )
-
-        p.image(
-          cardImage,
-          xPosition,
-          yPosition,
-          CARD_WIDTH,
-          CARD_HEIGHT,
-          ZERO,
-          ZERO,
-          CARD_WIDTH_WITHIN_IMAGE,
-          CARD_HEIGHT_WITHIN_IMAGE
-        )
-
-        p.rect(xPosition, yPosition, CARD_WIDTH, CARD_HEIGHT)
-      }
-
-      p.pop()
+      drawBet(playerPosition, hand)
+      drawHand(playerPosition, hand)
     }
+  }
+
+  const drawBet = (playerPosition, hand) => {
+    if (!hand) return
+
+    const ignoreSecondParameter = ZERO
+    const topChipColor = determineTopChipColor(hand.bet)
+    const chipText = formatChipText(hand.bet)
+    const chipTextSize = determineChipTextSize(chipText)
+
+    p.push()
+    p.strokeWeight(2)
+    p.stroke(0, 0, 0, 100)
+    p.fill(topChipColor)
+    p.ellipse(
+      getXPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
+      getYPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
+      SPOT_DIAMETER * 0.6,
+      SPOT_DIAMETER * 0.6
+    )
+    p.pop()
+
+    p.push()
+    p.noStroke()
+    p.textSize(chipTextSize)
+    p.textStyle(p.BOLD)
+    p.textFont('Helvetica')
+    p.rectMode(p.CENTER)
+    p.textAlign(p.CENTER, p.CENTER)
+
+    p.fill(topChipColor === 'black' ? 'white' : 'black')
+    p.text(
+      chipText,
+      2 + getXPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
+      1 + getYPositionFromPlayerPosition(playerPosition, ignoreSecondParameter),
+      SPOT_DIAMETER,
+      SPOT_DIAMETER
+    )
+    p.pop()
+  }
+
+  const determineChipTextSize = text => {
+    const length = text.length
+    if (length < 2) return 22
+    if (length < 3) return 20
+    if (length < 4) return 16
+    return 14
+  }
+
+  const formatChipText = bet => {
+    if (bet < 1000) return bet.toString()
+    return bet / 1000 + 'k'
+  }
+
+  const drawHand = (playerPosition, hand) => {
+    if (!hand || !hand.hand) return
+
+    p.push()
+    p.translate(-CARD_ADJUSTMENT, CARD_ADJUSTMENT)
+    p.stroke(CARD_BORDER_COLOR)
+    p.strokeWeight(CARD_STROKE_WEIGHT)
+
+    for (
+      let cardPosition = ZERO;
+      cardPosition < hand.hand.length;
+      ++cardPosition
+    ) {
+      const card = hand.hand[cardPosition]
+      const cardImage = getCardImage(card)
+
+      const xPosition = getXPositionFromPlayerPosition(
+        playerPosition,
+        cardPosition
+      )
+
+      const yPosition = getYPositionFromPlayerPosition(
+        playerPosition,
+        cardPosition
+      )
+
+      p.image(
+        cardImage,
+        xPosition,
+        yPosition,
+        CARD_WIDTH,
+        CARD_HEIGHT,
+        ZERO,
+        ZERO,
+        CARD_WIDTH_WITHIN_IMAGE,
+        CARD_HEIGHT_WITHIN_IMAGE
+      )
+
+      p.rect(xPosition, yPosition, CARD_WIDTH, CARD_HEIGHT)
+    }
+
+    p.pop()
+  }
+
+  const determineTopChipColor = bet => {
+    const denominations = Object.keys(DENOMINATION_COLOR_MAP)
+    let denominationIndex = denominations.length - 1
+    let betModDenomination = bet
+
+    while (betModDenomination !== 0)
+      betModDenomination %= denominations[denominationIndex--]
+
+    return DENOMINATION_COLOR_MAP[denominations[++denominationIndex]]
   }
 
   const getCardImage = card => cardImages[card.suit][card.value]
