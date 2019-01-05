@@ -1,3 +1,4 @@
+const MAX_ARC_DIAMETER = 950
 const CENTER_OF_SPOT_ARC_OFFSET_Y = -65
 const INSURANCE_LINE_ARC_OFFSET_FROM_SPOTS = 100
 const INSURANCE_LINE_WIDTH = 30
@@ -20,8 +21,8 @@ const NUMBER_OF_SUITS = 4
 const NUMBER_OF_RANKS = 13
 const ZERO = 0
 const ONE = 1
-const TABLE_WRAPPER_CLEARANCE_X = 17
-const TABLE_WRAPPER_CLEARANCE_Y = 22
+const TABLE_WRAPPER_CLEARANCE_X = 0
+const TABLE_WRAPPER_CLEARANCE_Y = 0
 const TABLE_CANVAS_WRAPPER_DIV = 'table-canvas-wrapper'
 const SERVER_PROTOCOL = 'http'
 const SERVER_HOST_ADDR = 'localhost'
@@ -75,7 +76,8 @@ export default p => {
   p.setup = () => {
     p.noLoop()
     p.createCanvas(canvasWidth(), canvasHeight())
-    ARC_DIAMETER = p.height * 1.4
+    ARC_DIAMETER = Math.min((canvasWidth() * 2) / 3, canvasHeight()) * 1.4
+    ARC_DIAMETER = Math.min(MAX_ARC_DIAMETER, ARC_DIAMETER)
     ARC_RADIUS = ARC_DIAMETER / 2
     INSURANCE_LINE_DIAMETER =
       ARC_DIAMETER - INSURANCE_LINE_ARC_OFFSET_FROM_SPOTS
@@ -88,7 +90,7 @@ export default p => {
     p.push()
     p.stroke(TABLE_LINE_COLOR)
     p.angleMode(p.DEGREES)
-    p.translate(p.width / 2, CENTER_OF_SPOT_ARC_OFFSET_Y)
+    p.translate(canvasWidth() / 2, CENTER_OF_SPOT_ARC_OFFSET_Y)
 
     p.push()
     p.strokeWeight(TABLE_LINE_STROKE_WEIGHT)
@@ -100,6 +102,16 @@ export default p => {
     p.pop()
 
     drawDealersCards()
+  }
+
+  p.windowResized = () => {
+    p.resizeCanvas(canvasWidth(), canvasHeight())
+    ARC_DIAMETER = Math.min((canvasWidth() * 2) / 3, canvasHeight()) * 1.4
+    ARC_DIAMETER = Math.min(MAX_ARC_DIAMETER, ARC_DIAMETER)
+    ARC_RADIUS = ARC_DIAMETER / 2
+    INSURANCE_LINE_DIAMETER =
+      ARC_DIAMETER - INSURANCE_LINE_ARC_OFFSET_FROM_SPOTS
+    p.redraw()
   }
 
   p.myCustomRedrawAccordingToNewPropsHandler = props => {
@@ -167,7 +179,7 @@ export default p => {
       const card = dealersHand[cardPosition]
       const cardImage = getCardImage(card)
       const xPosition =
-        p.width * FIRST_DEALER_CARD_X_POSITION_RATIO -
+        canvasWidth() * FIRST_DEALER_CARD_X_POSITION_RATIO -
         cardPosition * (CARD_WIDTH + SPACE_BETWEEN_DEALER_CARDS)
 
       p.image(

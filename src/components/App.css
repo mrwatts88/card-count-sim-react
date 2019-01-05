@@ -1,6 +1,18 @@
 #table-canvas-wrapper {
-  /* resize: both; */
-  height: 600px;
-  width: 900px;
-  overflow: scroll;
+  height: calc(100vh - 15px);
+  width: 100%;
+}
+
+.betting-chip-button:focus {
+  outline: 0;
+}
+
+.betting-chip-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid #333;
+  box-shadow: 1px 1px 1px 1px;
+  font-weight: bold;
+  font-size: 16px;
 }

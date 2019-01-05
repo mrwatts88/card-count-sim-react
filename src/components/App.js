@@ -1,13 +1,25 @@
 import React, { Component } from 'react'
 import Grid from '@material-ui/core/Grid'
-
 import AppBar from '@material-ui/core/AppBar'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
-
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import P5Wrapper from 'sketches/P5Wrapper'
 import tableSketch from 'sketches/tableSketch'
 import 'components/App.css'
+import GameConfig from './GameConfig'
+import Play from './Play'
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#1a237e',
+    },
+    secondary: {
+      main: '#ff6f00',
+    },
+  },
+})
 
 class App extends Component {
   state = {
@@ -26,34 +38,36 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <Grid
-          container
-          direction="row"
-          justify="space-between"
-          alignItems="stretch"
-        >
-          <Grid item xs={12} lg={8}>
-            <div id="table-canvas-wrapper">
-              <P5Wrapper gameState={gameState} sketch={tableSketch} />
-            </div>
+      <MuiThemeProvider theme={theme}>
+        <div className="App">
+          <Grid
+            container
+            direction="row"
+            justify="space-between"
+            alignItems="stretch"
+          >
+            <Grid item xs={12} lg={8}>
+              <div id="table-canvas-wrapper">
+                <P5Wrapper gameState={gameState} sketch={tableSketch} />
+              </div>
+            </Grid>
+            <Grid item xs={12} lg={4}>
+              <AppBar position="static">
+                <Tabs
+                  variant="fullWidth"
+                  value={this.state.activeTab}
+                  onChange={this.handleTabSelect}
+                >
+                  <Tab style={{ fontSize: '16px' }} label="Game Config" />
+                  <Tab style={{ fontSize: '16px' }} label="Play" />
+                </Tabs>
+              </AppBar>
+              {this.state.activeTab === 0 && <GameConfig />}
+              {this.state.activeTab === 1 && <Play />}
+            </Grid>
           </Grid>
-          <Grid item xs={12} lg={4}>
-            <AppBar position="static">
-              <Tabs
-                variant="fullWidth"
-                value={this.state.activeTab}
-                onChange={this.handleTabSelect}
-              >
-                <Tab label="Game Config" />
-                <Tab label="Play" />
-              </Tabs>
-            </AppBar>
-            {this.state.activeTab === 0 && <span>Game Config</span>}
-            {this.state.activeTab === 1 && <span>Play</span>}
-          </Grid>
-        </Grid>
-      </div>
+        </div>
+      </MuiThemeProvider>
     )
   }
 }
