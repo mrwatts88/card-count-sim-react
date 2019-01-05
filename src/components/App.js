@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
-import Row from 'react-bootstrap/lib/Row'
-import Button from 'react-bootstrap/lib/Button'
-import Col from 'react-bootstrap/lib/Col'
+import Grid from '@material-ui/core/Grid'
+
+import AppBar from '@material-ui/core/AppBar'
+import Tabs from '@material-ui/core/Tabs'
+import Tab from '@material-ui/core/Tab'
+
 import P5Wrapper from 'sketches/P5Wrapper'
 import tableSketch from 'sketches/tableSketch'
 import 'components/App.css'
@@ -9,6 +12,7 @@ import 'components/App.css'
 class App extends Component {
   state = {
     numActivePlayers: 0,
+    activeTab: 1,
   }
 
   addPlayer = () => {
@@ -18,21 +22,37 @@ class App extends Component {
     })
   }
 
+  handleTabSelect = (e, activeTab) => this.setState({ activeTab })
+
   render() {
     return (
       <div className="App">
-        <Row className="show-grid">
-          <Col id="table-sketch-col" xs={12} md={8}>
+        <Grid
+          container
+          direction="row"
+          justify="space-between"
+          alignItems="stretch"
+        >
+          <Grid item xs={12} lg={8}>
             <div id="table-canvas-wrapper">
               <P5Wrapper gameState={gameState} sketch={tableSketch} />
             </div>
-          </Col>
-          <Col id="settings-col" xs={12} md={4}>
-            <Button type="primary" onClick={this.addPlayer}>
-              Add Player
-            </Button>
-          </Col>
-        </Row>
+          </Grid>
+          <Grid item xs={12} lg={4}>
+            <AppBar position="static">
+              <Tabs
+                variant="fullWidth"
+                value={this.state.activeTab}
+                onChange={this.handleTabSelect}
+              >
+                <Tab label="Game Config" />
+                <Tab label="Play" />
+              </Tabs>
+            </AppBar>
+            {this.state.activeTab === 0 && <span>Game Config</span>}
+            {this.state.activeTab === 1 && <span>Play</span>}
+          </Grid>
+        </Grid>
       </div>
     )
   }
@@ -49,7 +69,7 @@ const gameState = {
       hands: [
         {
           bustedOrDiscarded: false,
-          bet: 0,
+          bet: 1,
           hand: [
             { suit: 3, value: 2 },
             { suit: 2, value: 11 },
@@ -65,7 +85,7 @@ const gameState = {
       hands: [
         {
           bustedOrDiscarded: false,
-          bet: 0,
+          bet: 1,
           hand: [
             { suit: 3, value: 2 },
             { suit: 2, value: 11 },
@@ -81,7 +101,7 @@ const gameState = {
       hands: [
         {
           bustedOrDiscarded: false,
-          bet: 0,
+          bet: 1,
           hand: [
             { suit: 3, value: 2 },
             { suit: 2, value: 11 },
@@ -97,7 +117,7 @@ const gameState = {
       hands: [
         {
           bustedOrDiscarded: false,
-          bet: 0,
+          bet: 1,
           hand: [
             { suit: 3, value: 2 },
             { suit: 2, value: 11 },
@@ -113,7 +133,7 @@ const gameState = {
       hands: [
         {
           bustedOrDiscarded: false,
-          bet: 0,
+          bet: 1,
           hand: [
             { suit: 3, value: 2 },
             { suit: 2, value: 11 },

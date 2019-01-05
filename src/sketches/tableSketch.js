@@ -25,7 +25,7 @@ const TABLE_WRAPPER_CLEARANCE_Y = 22
 const TABLE_CANVAS_WRAPPER_DIV = 'table-canvas-wrapper'
 const SERVER_PROTOCOL = 'http'
 const SERVER_HOST_ADDR = 'localhost'
-const SERVER_PORT = '3000'
+const SERVER_PORT = '3001'
 const TABLE_LINE_COLOR = 'white'
 const SECONDARY_TABLE_LINE_COLOR = 'yellow'
 const CARD_BORDER_COLOR = 'black'
@@ -301,6 +301,7 @@ export default p => {
   }
 
   const determineTopChipColor = bet => {
+    if (bet === 0) return p.color(0, 0, 0, 0)
     const denominations = Object.keys(DENOMINATION_COLOR_MAP)
     let denominationIndex = denominations.length - 1
     let betModDenomination = bet
