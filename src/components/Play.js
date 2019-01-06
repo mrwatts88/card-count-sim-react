@@ -19,7 +19,13 @@ export default class Play extends Component {
 
   render() {
     return (
-      <div style={{ margin: '5px' }}>
+      <div
+        style={{
+          margin: '15px',
+          padding: '15px',
+          border: '1px solid lightgrey',
+        }}
+      >
         <Grid
           container
           direction="column"
@@ -32,7 +38,7 @@ export default class Play extends Component {
               direction="row"
               justify="space-between"
               alignItems="stretch"
-              style={{ padding: '10px' }}
+              style={{ paddingBottom: '15px' }}
             >
               <Grid style={{ textAlign: 'center' }} item xs={2}>
                 <button
@@ -103,13 +109,7 @@ export default class Play extends Component {
             </Grid>
           </Grid>
           <Grid item>
-            <Button
-              style={{ fontSize: '16px' }}
-              variant="outlined"
-              fullWidth
-              disabled
-              color="secondary"
-            >
+            <Button variant="outlined" fullWidth disabled color="secondary">
               Place Bets
             </Button>
           </Grid>
